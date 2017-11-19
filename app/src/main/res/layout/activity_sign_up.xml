@@ -11,6 +11,16 @@
     android:layout_height="25dp" />
 
     <EditText
+        android:id="@+id/signupName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Name"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="25dp" />
+
+    <EditText
         android:id="@+id/signupEmail"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,6 +32,16 @@
 
     <EditText
         android:id="@+id/signupPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"/>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="25dp" />
+
+    <EditText
+        android:id="@+id/signupPassword2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"/>

@@ -15,11 +15,18 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
 
 public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
     private Button loginRedirect, signupBtn;
-    EditText signupEmail, signupPassword;
+    EditText signupEmail, signupPassword, signupPassword2, signupName;
     private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,15 +36,41 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         signupBtn = (Button)findViewById(R.id.signupBtn);
         signupEmail = (EditText)findViewById(R.id.signupEmail);
         signupPassword = (EditText)findViewById(R.id.signupPassword);
+        signupPassword2 = (EditText)findViewById(R.id.signupPassword2);
+        signupName = (EditText)findViewById(R.id.signupName);
+
+
         mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
 
         loginRedirect.setOnClickListener(this);
         signupBtn.setOnClickListener(this);
     }
 
     private void registerUser(){
-        String email = signupEmail.getText().toString();
-        String pass = signupPassword.getText().toString();
+        final String name = signupName.getText().toString();
+        final String email = signupEmail.getText().toString();
+        final String pass = signupPassword.getText().toString();
+        final String pass2 = signupPassword2.getText().toString();
+
+        if(!pass.equals(pass2)){
+            signupPassword.setError("Passwords must be the same");
+            signupPassword2.setError("Passwords must be the same");
+            signupPassword.requestFocus();
+            return;
+        }
+
+        if(pass2.isEmpty()){
+            signupPassword2.setError("Password is Required");
+            signupPassword2.requestFocus();
+            return;
+        }
+
+        if(name.isEmpty()){
+            signupName.setError("Name is Required");
+            signupName.requestFocus();
+            return;
+        }
 
         if(email.isEmpty()){
             signupEmail.setError("Email is Required");
@@ -62,11 +95,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             signupPassword.requestFocus();
             return;
         }
-
         mAuth.createUserWithEmailAndPassword(email,pass).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
+                    saveUser(email,pass,name);
                     finish();
                     Intent intent = new Intent(SignUpActivity.this, ProfileActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -82,6 +115,28 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
+    public void saveUser(String email, String password,String name){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        UserProfileChangeRequest update = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
+        user.updateProfile(update);
+        String uid = user.getUid();
+        HashMap<String,String> data = new HashMap<>();
+        data.put("Email", email);
+        data.put("UID",uid);
+        data.put("Password",password);
+        data.put("Name",name);
+
+        mDatabase.push().setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    Toast.makeText(getApplicationContext(),"User stored in DB", Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(getApplicationContext(), task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
     @Override
     public void onClick(View view) {
         switch(view.getId()){
