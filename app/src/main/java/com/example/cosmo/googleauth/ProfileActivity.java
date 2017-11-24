@@ -37,7 +37,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
 
-                    // do nothing
                 } else {
                     finish();
                     Intent intent = new Intent(ProfileActivity.this, MainActivity.class);

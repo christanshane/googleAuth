@@ -100,6 +100,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
                     saveUser(email,pass,name);
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
+                    user.updateProfile(profileUpdates);
                     finish();
                     Intent intent = new Intent(SignUpActivity.this, ProfileActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -115,10 +118,8 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    public void saveUser(String email, String password,String name){
+    public void saveUser(String email, String password, final String name){
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        UserProfileChangeRequest update = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
-        user.updateProfile(update);
         String uid = user.getUid();
         HashMap<String,String> data = new HashMap<>();
         data.put("Email", email);
